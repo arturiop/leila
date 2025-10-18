@@ -33,24 +33,47 @@ export const DemoModal = ({ open, onOpenChange }: DemoModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+  
     if (!formData.consent) {
       toast.error("Please confirm that you understand how Leila will use your data");
       return;
     }
-
+  
     setLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Demo request:", formData);
-      toast.success("Leila is preparing your personalized voice coach...", {
-        description: "We'll be in touch soon to set up your demo!"
+  
+    try {
+      const response = await fetch("https://75dbf6298eb4.ngrok-free.app/try-demo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true", // 👈 bypass ngrok browser warning
+        },
+        body: JSON.stringify({
+          company_name: formData.companyName,
+          industry: formData.industry,
+          team_size: formData.teamSize,
+          focus_area: formData.focus,
+          context: formData.guidelines,
+          employees: formData.employeeContacts
+            ? formData.employeeContacts.split(",").map((email) => ({
+                email: email.trim(),
+                name: email.split("@")[0],
+              }))
+            : [],
+        }),
       });
-      setLoading(false);
+  
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+  
+      const data = await response.json().catch(() => ({}));
+  
+      toast.success("✅ Leila is preparing your personalized voice demo!", {
+        description: data?.message || "You’ll receive an invite shortly.",
+      });
+  
       onOpenChange(false);
-      
-      // Reset form
       setFormData({
         companyName: "",
         industry: "",
@@ -60,7 +83,12 @@ export const DemoModal = ({ open, onOpenChange }: DemoModalProps) => {
         employeeContacts: "",
         consent: false,
       });
-    }, 2000);
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while creating your demo. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
