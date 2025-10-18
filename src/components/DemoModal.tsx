@@ -160,12 +160,12 @@ export const DemoModal = ({ open, onOpenChange }: DemoModalProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="employeeContacts">Add employee emails or Slack IDs (optional)</Label>
+            <Label htmlFor="employeeContacts">Add employees</Label>
             <Textarea
               id="employeeContacts"
               value={formData.employeeContacts}
               onChange={(e) => setFormData({ ...formData, employeeContacts: e.target.value })}
-              placeholder="john@company.com, @jane.slack, etc."
+              placeholder="first name, last name, phone, ..."
               rows={3}
             />
           </div>
